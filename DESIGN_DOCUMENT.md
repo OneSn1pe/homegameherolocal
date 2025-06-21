@@ -91,12 +91,12 @@ All chip values are calculated as percentages of your buy-in amount. For example
 - Starting: 10 red, 10 green, 2 black = 100% of buy-in
 
 *Tournament* (Fixed values - recommended $3000 buy-in):
-- White chips: $10 each
-- Blue chips: $25 each
-- Red chips: $50 each
-- Green chips: $100 each
-- Black chips: $500 each
-- Starting: 10 white, 10 blue, 10 red, 5 green = $1350 worth
+- White chips: $10 each (10 chips = $100)
+- Red chips: $50 each (17 chips = $850)
+- Blue chips: $25 each (14 chips = $350)
+- Green chips: $100 each (7 chips = $700)
+- Black chips: $500 each (2 chips = $1000)
+- Starting stack total: $3000 worth (matches buy-in exactly)
 - Buy-in is fully editable - adjust to match your tournament stakes
 
 **Custom Configuration**:
