@@ -268,7 +268,7 @@
         
         .chip-input-row {
             display: grid;
-            grid-template-columns: 40px 1fr 40px 40px;
+            grid-template-columns: 40px 1fr 40px 80px 40px;
             gap: 0.5rem;
             align-items: center;
             margin-bottom: 0.5rem;
@@ -936,11 +936,18 @@
                 const row = document.createElement('div');
                 row.className = 'chip-input-row';
                 const chipValue = chip.dollarValue || (chip.value * gameState.buyIn);
+                const currentCount = player.chips[chip.name] || 0;
                 row.innerHTML = `
                     <div class="chip-color" style="background-color: ${chip.color}"></div>
-                    <div>${chip.name} ($${chipValue.toFixed(2)})</div>
+                    <div style="min-width: 120px;">${chip.name} ($${chipValue.toFixed(2)})</div>
                     <button class="btn btn-small" onclick="adjustChips('${chip.name}', -1)">-</button>
-                    <div class="chip-count" id="chip-${chip.name}">${player.chips[chip.name] || 0}</div>
+                    <input type="number" 
+                           id="chip-input-${chip.name}" 
+                           value="${currentCount}" 
+                           min="0" 
+                           style="width: 60px; text-align: center; margin: 0 0.5rem;"
+                           onchange="setChipCount('${chip.name}', this.value)"
+                           oninput="setChipCount('${chip.name}', this.value)">
                     <button class="btn btn-small" onclick="adjustChips('${chip.name}', 1)">+</button>
                 `;
                 inputsDiv.appendChild(row);
@@ -957,7 +964,27 @@
             const newCount = Math.max(0, currentCount + delta);
             player.chips[chipName] = newCount;
             
-            document.getElementById(`chip-${chipName}`).textContent = newCount;
+            // Update the input field
+            const input = document.getElementById(`chip-input-${chipName}`);
+            if (input) input.value = newCount;
+            
+            updateEditTotal();
+        }
+        
+        function setChipCount(chipName, value) {
+            const player = gameState.players.find(p => p.id === gameState.currentEditingPlayer);
+            if (!player) return;
+            
+            const count = parseInt(value) || 0;
+            const validCount = Math.max(0, count);
+            player.chips[chipName] = validCount;
+            
+            // Update input if value was invalid
+            if (count !== validCount) {
+                const input = document.getElementById(`chip-input-${chipName}`);
+                if (input) input.value = validCount;
+            }
+            
             updateEditTotal();
         }
         
