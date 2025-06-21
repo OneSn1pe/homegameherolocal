@@ -1,0 +1,11 @@
+{
+  "port": 8080,
+  "host": "localhost",
+  "root": ".",
+  "open": true,
+  "file": "poker-calculator.html",
+  "wait": 500,
+  "mount": [["/", "./"]],
+  "logLevel": 2,
+  "middleware": []
+}
