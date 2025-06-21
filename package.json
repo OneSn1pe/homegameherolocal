@@ -4,9 +4,10 @@
   "description": "Simple offline poker calculator for home games",
   "main": "poker-calculator.html",
   "scripts": {
-    "dev": "npx http-server -p 8080 -c-1 -o /poker-calculator.html",
+    "dev": "npx http-server -a localhost -p 8080 -c-1 -o /poker-calculator.html",
     "start": "npm run dev",
-    "serve": "npx serve -p 8080"
+    "serve": "npx serve -l 8080",
+    "kill-port": "kill-port 8080"
   },
   "keywords": [
     "poker",
@@ -18,6 +19,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "kill-port": "^2.0.1"
   }
 }
