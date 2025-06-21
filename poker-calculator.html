@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Calculator - Home Game Hero</title>
+    <meta name="description" content="Simple offline poker calculator for home games">
+    <meta name="theme-color" content="#2c3e50">
+    
+    <!-- PWA support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Poker Calc">
+    
+    <style id="theme-styles">
+        :root {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e0e0e0;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-inverse: #ffffff;
+            --accent-primary: #2c3e50;
+            --accent-secondary: #3498db;
+            --accent-success: #27ae60;
+            --accent-danger: #e74c3c;
+            --accent-warning: #f39c12;
+            --border-color: #ddd;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3a3a3a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --text-inverse: #1a1a1a;
+            --accent-primary: #3498db;
+            --accent-secondary: #2980b9;
+            --accent-success: #27ae60;
+            --accent-danger: #e74c3c;
+            --accent-warning: #f39c12;
+            --border-color: #444;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--accent-primary);
+            color: var(--text-inverse);
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .btn {
+            background-color: var(--accent-secondary);
+            color: var(--text-inverse);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-success {
+            background-color: var(--accent-success);
+        }
+        
+        .btn-danger {
+            background-color: var(--accent-danger);
+        }
+        
+        .btn-warning {
+            background-color: var(--accent-warning);
+        }
+        
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .card {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .chip-config {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .chip-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 2fr;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .chip-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+        }
+        
+        .player-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .player-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            display: grid;
+            gap: 0.5rem;
+        }
+        
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .player-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+            background-color: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        
+        .chip-editor {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px var(--shadow);
+            max-width: 90%;
+            width: 400px;
+            z-index: 1000;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .chip-input-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 40px 40px;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .chip-count {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .payment-instruction {
+            background-color: var(--bg-tertiary);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .payment-amount {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--accent-success);
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-inverse);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .leader {
+            border: 2px solid var(--accent-success);
+        }
+        
+        .eliminated {
+            opacity: 0.6;
+        }
+        
+        .positive {
+            color: var(--accent-success);
+        }
+        
+        .negative {
+            color: var(--accent-danger);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .chip-row {
+                grid-template-columns: 30px 1fr 1fr;
+            }
+            
+            .player-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .player-list {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+        
+        .large-text {
+            font-size: 1.2em;
+        }
+        
+        .large-text .btn {
+            font-size: 1.1rem;
+            padding: 0.6rem 1.2rem;
+        }
+        
+        .large-text .stat-value {
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-controls">
+            <h1>🃏 Home Game Hero</h1>
+            <div>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
+                <button class="theme-toggle" onclick="toggleLargeText()" title="Toggle large text">🔍</button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="screen active">
+            <div class="card">
+                <h2>Welcome to Home Game Hero!</h2>
+                <p>The simple offline poker calculator for your home games.</p>
+                <br>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn" onclick="showScreen('setup-screen')">New Game</button>
+                    <button class="btn" onclick="loadGameHistory()">Load Game</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Features</h3>
+                <ul style="margin-left: 1.5rem;">
+                    <li>Track chip values and calculate payouts</li>
+                    <li>Works completely offline</li>
+                    <li>Automatic saving</li>
+                    <li>Smart payment distribution</li>
+                    <li>Mobile friendly</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Game Setup Screen -->
+        <div id="setup-screen" class="screen">
+            <div class="card">
+                <h2>Game Setup</h2>
+                
+                <div class="form-group">
+                    <label>Chip Configuration</label>
+                    <select id="chip-preset" onchange="handleChipPreset()">
+                        <option value="">Select a preset...</option>
+                        <option value="simple">Simple Home Game (3 colors)</option>
+                        <option value="casino">Casino Style (4 colors)</option>
+                        <option value="high">High Stakes (4 colors)</option>
+                        <option value="custom">Custom Configuration</option>
+                    </select>
+                </div>
+                
+                <div id="chip-config" class="chip-config hidden"></div>
+                
+                <div class="form-group">
+                    <label>Buy-in Amount ($)</label>
+                    <input type="number" id="buy-in" placeholder="Enter buy-in amount" min="1" step="1" value="100" onchange="handleBuyInChange()">
+                    <small style="display: block; margin-top: 0.25rem; color: var(--text-secondary);">This is the real money each player contributes to start</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Players</label>
+                    <div id="player-inputs">
+                        <input type="text" class="player-name-input" placeholder="Player 1 name" style="margin-bottom: 0.5rem;">
+                        <input type="text" class="player-name-input" placeholder="Player 2 name" style="margin-bottom: 0.5rem;">
+                    </div>
+                    <button class="btn btn-small" onclick="addPlayerInput()">+ Add Player</button>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn" onclick="showScreen('welcome-screen')">Back</button>
+                    <button class="btn btn-success" onclick="startGame()">Start Game</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="card" style="margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3>Total Pot: $<span id="total-pot">0</span></h3>
+                        <p style="color: var(--text-secondary);">Players: <span id="player-count">0</span></p>
+                    </div>
+                    <div id="game-controls">
+                        <button class="btn btn-warning" onclick="startFinalizing()">Update Final Chips</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="player-list" class="player-list"></div>
+        </div>
+        
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <div class="card">
+                <h2>Final Results</h2>
+                <div id="final-standings"></div>
+            </div>
+            
+            <div class="card">
+                <h3>Payment Instructions</h3>
+                <div id="payment-map"></div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button class="btn" onclick="exportResults()">Export Results</button>
+                <button class="btn btn-success" onclick="showScreen('welcome-screen')">New Game</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for chip editing -->
+    <div id="chip-editor-modal" class="hidden">
+        <div class="modal-overlay" onclick="closeChipEditor()"></div>
+        <div class="chip-editor">
+            <h3>Edit Chips - <span id="edit-player-name"></span></h3>
+            <div id="chip-inputs"></div>
+            <div style="margin-top: 1rem;">
+                <p>Total Value: $<span id="edit-total-value">0</span></p>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn" onclick="closeChipEditor()">Cancel</button>
+                <button class="btn btn-success" onclick="saveChips()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global game state
+        let gameState = {
+            players: [],
+            chipConfig: [],
+            buyIn: 0,
+            totalPot: 0,
+            gameHistory: [],
+            currentEditingPlayer: null,
+            gamePhase: 'playing' // 'playing' or 'finalizing'
+        };
+        
+        // Chip presets - values represent proportion of buy-in, not fixed dollar amounts
+        const chipPresets = {
+            simple: [
+                { color: '#ffffff', name: 'White', value: 0.025, count: 20 },  // 2.5% of buy-in each
+                { color: '#ff0000', name: 'Red', value: 0.125, count: 6 },    // 12.5% of buy-in each
+                { color: '#0000ff', name: 'Blue', value: 0.25, count: 1 }     // 25% of buy-in each
+            ],
+            casino: [
+                { color: '#ffffff', name: 'White', value: 0.01, count: 20 },  // 1% of buy-in each
+                { color: '#ff0000', name: 'Red', value: 0.05, count: 12 },   // 5% of buy-in each
+                { color: '#00ff00', name: 'Green', value: 0.25, count: 1 },  // 25% of buy-in each
+                { color: '#000000', name: 'Black', value: 0.5, count: 0 }    // 50% of buy-in each
+            ],
+            high: [
+                { color: '#ff0000', name: 'Red', value: 0.01, count: 10 },   // 1% of buy-in each
+                { color: '#00ff00', name: 'Green', value: 0.05, count: 10 }, // 5% of buy-in each
+                { color: '#000000', name: 'Black', value: 0.2, count: 2 },   // 20% of buy-in each
+                { color: '#800080', name: 'Purple', value: 0.5, count: 0 }   // 50% of buy-in each
+            ]
+        };
+        
+        // Initialize app
+        function init() {
+            loadTheme();
+            loadLargeTextSetting();
+            loadGameState();
+            setupServiceWorker();
+        }
+        
+        function loadLargeTextSetting() {
+            const isLarge = localStorage.getItem('largeText') === 'true';
+            if (isLarge) {
+                document.body.classList.add('large-text');
+            }
+        }
+        
+        // Theme management
+        function loadTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', theme);
+            updateThemeIcon();
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon();
+        }
+        
+        function updateThemeIcon() {
+            const icon = document.querySelector('.theme-toggle');
+            const theme = document.body.getAttribute('data-theme');
+            icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+        
+        function toggleLargeText() {
+            document.body.classList.toggle('large-text');
+            const isLarge = document.body.classList.contains('large-text');
+            localStorage.setItem('largeText', isLarge);
+        }
+        
+        // Screen navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        // Game setup functions
+        function handleChipPreset() {
+            const preset = document.getElementById('chip-preset').value;
+            const configDiv = document.getElementById('chip-config');
+            
+            if (!preset) {
+                configDiv.classList.add('hidden');
+                return;
+            }
+            
+            configDiv.classList.remove('hidden');
+            
+            if (preset === 'custom') {
+                renderCustomChipConfig();
+            } else {
+                renderPresetChipConfig(chipPresets[preset]);
+            }
+        }
+        
+        function renderPresetChipConfig(chips) {
+            const configDiv = document.getElementById('chip-config');
+            const buyIn = parseFloat(document.getElementById('buy-in').value) || 100;
+            let html = '<h4>Chip Values & Starting Stacks</h4>';
+            html += '<p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Chip values are calculated based on your buy-in amount</p>';
+            
+            chips.forEach((chip, index) => {
+                const dollarValue = (chip.value * buyIn).toFixed(2);
+                html += `
+                    <div class="chip-row">
+                        <div class="chip-color" style="background-color: ${chip.color}"></div>
+                        <div>${chip.name} - $${dollarValue} each</div>
+                        <div>
+                            <input type="number" id="chip-count-${index}" value="${chip.count}" min="0" 
+                                   onchange="updateBuyInSuggestion()" style="width: 80px;">
+                            chips
+                        </div>
+                    </div>
+                `;
+            });
+            
+            configDiv.innerHTML = html;
+            gameState.chipConfig = chips;
+            updateBuyInSuggestion();
+        }
+        
+        function renderCustomChipConfig() {
+            const configDiv = document.getElementById('chip-config');
+            let html = '<h4>Custom Chip Configuration</h4>';
+            html += '<p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Set each chip value as a percentage of the buy-in amount</p>';
+            html += '<div id="custom-chips"></div>';
+            html += '<button class="btn btn-small" onclick="addCustomChip()">+ Add Chip Color</button>';
+            configDiv.innerHTML = html;
+            
+            // Add initial chip
+            addCustomChip();
+        }
+        
+        function addCustomChip() {
+            const container = document.getElementById('custom-chips');
+            const index = container.children.length;
+            
+            const chipRow = document.createElement('div');
+            chipRow.className = 'chip-row';
+            chipRow.innerHTML = `
+                <input type="color" id="custom-color-${index}" value="#${Math.floor(Math.random()*16777215).toString(16)}">
+                <input type="text" id="custom-name-${index}" placeholder="Color name">
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="number" id="custom-value-${index}" placeholder="% of buy-in" min="0.1" step="0.1" style="width: 100px;">
+                <span style="font-size: 0.875rem;">%</span>
+                </div>
+            `;
+            
+            container.appendChild(chipRow);
+        }
+        
+        function updateBuyInSuggestion() {
+            const preset = document.getElementById('chip-preset').value;
+            if (!preset || preset === 'custom') return;
+            
+            const buyIn = parseFloat(document.getElementById('buy-in').value) || 100;
+            const chips = chipPresets[preset];
+            let total = 0;
+            
+            chips.forEach((chip, index) => {
+                const count = parseInt(document.getElementById(`chip-count-${index}`).value) || 0;
+                total += (chip.value * buyIn) * count;
+            });
+            
+            // Show warning if chip total doesn't match buy-in
+            const configDiv = document.getElementById('chip-config');
+            const existingWarning = configDiv.querySelector('.chip-warning');
+            if (existingWarning) existingWarning.remove();
+            
+            if (Math.abs(total - buyIn) > 0.01) {
+                const warning = document.createElement('div');
+                warning.className = 'chip-warning';
+                warning.style.cssText = 'color: var(--accent-warning); margin-top: 0.5rem; font-size: 0.875rem;';
+                warning.textContent = `Warning: Chip total ($${total.toFixed(2)}) doesn't match buy-in ($${buyIn.toFixed(2)})`;
+                configDiv.appendChild(warning);
+            }
+        }
+        
+        function handleBuyInChange() {
+            const preset = document.getElementById('chip-preset').value;
+            if (preset && preset !== 'custom') {
+                // Re-render chip config with new buy-in value
+                renderPresetChipConfig(chipPresets[preset]);
+            }
+        }
+        
+        function addPlayerInput() {
+            const container = document.getElementById('player-inputs');
+            const playerCount = container.children.length;
+            
+            if (playerCount >= 10) {
+                alert('Maximum 10 players supported');
+                return;
+            }
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'player-name-input';
+            input.placeholder = `Player ${playerCount + 1} name`;
+            input.style.marginBottom = '0.5rem';
+            
+            container.appendChild(input);
+        }
+        
+        function startGame() {
+            // Validate inputs
+            const preset = document.getElementById('chip-preset').value;
+            if (!preset) {
+                alert('Please select a chip configuration');
+                return;
+            }
+            
+            const buyIn = parseFloat(document.getElementById('buy-in').value);
+            if (!buyIn || buyIn <= 0) {
+                alert('Please enter a valid buy-in amount');
+                return;
+            }
+            
+            // Get player names
+            const playerInputs = document.querySelectorAll('.player-name-input');
+            const players = [];
+            
+            playerInputs.forEach((input, index) => {
+                const name = input.value.trim();
+                if (name) {
+                    players.push({
+                        id: Date.now() + index,
+                        name: name,
+                        chips: {},
+                        buyIns: [buyIn],
+                        totalInvested: buyIn,
+                        currentValue: 0,
+                        netGain: 0
+                    });
+                }
+            });
+            
+            if (players.length < 2) {
+                alert('Please enter at least 2 player names');
+                return;
+            }
+            
+            // Setup chip configuration
+            if (preset === 'custom') {
+                setupCustomChipConfig();
+            } else {
+                const chips = chipPresets[preset];
+                chips.forEach((chip, index) => {
+                    const count = parseInt(document.getElementById(`chip-count-${index}`).value) || 0;
+                    chip.count = count;
+                });
+                gameState.chipConfig = chips;
+            }
+            
+            // Store actual dollar values for chips based on buy-in
+            gameState.chipConfig.forEach(chip => {
+                chip.dollarValue = chip.value * buyIn;
+            });
+            
+            // Initialize player chips
+            players.forEach(player => {
+                gameState.chipConfig.forEach(chip => {
+                    player.chips[chip.name] = chip.count;
+                });
+                player.currentValue = calculatePlayerValue(player);
+                player.netGain = player.currentValue - player.totalInvested;
+            });
+            
+            // Update game state
+            gameState.players = players;
+            gameState.buyIn = buyIn;
+            gameState.totalPot = players.length * buyIn;
+            gameState.gamePhase = 'playing';
+            
+            // Save and show game screen
+            saveGameState();
+            showGameScreen();
+        }
+        
+        function setupCustomChipConfig() {
+            const container = document.getElementById('custom-chips');
+            const chipRows = container.children;
+            const chips = [];
+            
+            for (let i = 0; i < chipRows.length; i++) {
+                const color = document.getElementById(`custom-color-${i}`).value;
+                const name = document.getElementById(`custom-name-${i}`).value.trim();
+                const percentage = parseFloat(document.getElementById(`custom-value-${i}`).value);
+                
+                if (name && percentage > 0) {
+                    chips.push({
+                        color: color,
+                        name: name,
+                        value: percentage / 100, // Convert percentage to decimal
+                        count: 0
+                    });
+                }
+            }
+            
+            gameState.chipConfig = chips;
+        }
+        
+        function showGameScreen() {
+            updateGameDisplay();
+            showScreen('game-screen');
+        }
+        
+        function updateGameDisplay() {
+            // Update header stats
+            document.getElementById('total-pot').textContent = gameState.totalPot.toFixed(2);
+            document.getElementById('player-count').textContent = gameState.players.length;
+            
+            // Update game controls
+            const controlsDiv = document.getElementById('game-controls');
+            if (gameState.gamePhase === 'playing') {
+                controlsDiv.innerHTML = '<button class="btn btn-warning" onclick="startFinalizing()">Update Final Chips</button>';
+            } else {
+                controlsDiv.innerHTML = '<button class="btn" onclick="backToPlaying()">Back</button> <button class="btn btn-danger" onclick="endGame()">Calculate Payouts</button>';
+            }
+            
+            // Update player list
+            const playerList = document.getElementById('player-list');
+            playerList.innerHTML = '';
+            
+            // Find leader
+            const maxValue = Math.max(...gameState.players.map(p => p.currentValue));
+            
+            gameState.players.forEach(player => {
+                const isLeader = player.currentValue === maxValue && player.currentValue > 0;
+                const playerCard = createPlayerCard(player, isLeader);
+                playerList.appendChild(playerCard);
+            });
+        }
+        
+        function createPlayerCard(player, isLeader) {
+            const card = document.createElement('div');
+            card.className = `player-card ${isLeader ? 'leader' : ''} ${player.currentValue === 0 ? 'eliminated' : ''}`;
+            
+            const netClass = player.netGain >= 0 ? 'positive' : 'negative';
+            const netSign = player.netGain >= 0 ? '+' : '';
+            
+            card.innerHTML = `
+                <div class="player-header">
+                    <div class="player-name">${player.name}</div>
+                    <div>
+                        ${gameState.gamePhase === 'finalizing' ? 
+                            `<button class="btn btn-small btn-success" onclick="editChips(${player.id})">Update Chips</button>` : 
+                            `<button class="btn btn-small btn-warning" onclick="addRebuy(${player.id})">Rebuy</button>`
+                        }
+                    </div>
+                </div>
+                <div class="player-stats">
+                    ${gameState.gamePhase === 'playing' ? `
+                        <div class="stat-item">
+                            <div class="stat-label">Starting Stack</div>
+                            <div class="stat-value">$${gameState.buyIn.toFixed(2)}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Total Invested</div>
+                            <div class="stat-value">$${player.totalInvested.toFixed(2)}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Buy-ins</div>
+                            <div class="stat-value">${player.buyIns.length}</div>
+                        </div>
+                    ` : `
+                        <div class="stat-item">
+                            <div class="stat-label">Current Value</div>
+                            <div class="stat-value">$${player.currentValue.toFixed(2)}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Total Invested</div>
+                            <div class="stat-value">$${player.totalInvested.toFixed(2)}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Net Gain/Loss</div>
+                            <div class="stat-value ${netClass}">${netSign}$${Math.abs(player.netGain).toFixed(2)}</div>
+                        </div>
+                    `}
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function editChips(playerId) {
+            const player = gameState.players.find(p => p.id === playerId);
+            if (!player) return;
+            
+            gameState.currentEditingPlayer = playerId;
+            
+            // Show modal
+            document.getElementById('chip-editor-modal').classList.remove('hidden');
+            document.getElementById('edit-player-name').textContent = player.name;
+            
+            // Build chip inputs
+            const inputsDiv = document.getElementById('chip-inputs');
+            inputsDiv.innerHTML = '';
+            
+            gameState.chipConfig.forEach(chip => {
+                const row = document.createElement('div');
+                row.className = 'chip-input-row';
+                const chipValue = chip.dollarValue || (chip.value * gameState.buyIn);
+                row.innerHTML = `
+                    <div class="chip-color" style="background-color: ${chip.color}"></div>
+                    <div>${chip.name} ($${chipValue.toFixed(2)})</div>
+                    <button class="btn btn-small" onclick="adjustChips('${chip.name}', -1)">-</button>
+                    <div class="chip-count" id="chip-${chip.name}">${player.chips[chip.name] || 0}</div>
+                    <button class="btn btn-small" onclick="adjustChips('${chip.name}', 1)">+</button>
+                `;
+                inputsDiv.appendChild(row);
+            });
+            
+            updateEditTotal();
+        }
+        
+        function adjustChips(chipName, delta) {
+            const player = gameState.players.find(p => p.id === gameState.currentEditingPlayer);
+            if (!player) return;
+            
+            const currentCount = player.chips[chipName] || 0;
+            const newCount = Math.max(0, currentCount + delta);
+            player.chips[chipName] = newCount;
+            
+            document.getElementById(`chip-${chipName}`).textContent = newCount;
+            updateEditTotal();
+        }
+        
+        function updateEditTotal() {
+            const player = gameState.players.find(p => p.id === gameState.currentEditingPlayer);
+            if (!player) return;
+            
+            const total = calculatePlayerValue(player);
+            document.getElementById('edit-total-value').textContent = total.toFixed(2);
+        }
+        
+        function calculatePlayerValue(player) {
+            let total = 0;
+            gameState.chipConfig.forEach(chip => {
+                const chipValue = chip.dollarValue || (chip.value * gameState.buyIn);
+                total += (player.chips[chip.name] || 0) * chipValue;
+            });
+            return total;
+        }
+        
+        function closeChipEditor() {
+            document.getElementById('chip-editor-modal').classList.add('hidden');
+            gameState.currentEditingPlayer = null;
+        }
+        
+        function saveChips() {
+            const player = gameState.players.find(p => p.id === gameState.currentEditingPlayer);
+            if (!player) return;
+            
+            player.currentValue = calculatePlayerValue(player);
+            player.netGain = player.currentValue - player.totalInvested;
+            
+            closeChipEditor();
+            updateGameDisplay();
+            saveGameState();
+        }
+        
+        function addRebuy(playerId) {
+            const player = gameState.players.find(p => p.id === playerId);
+            if (!player) return;
+            
+            const rebuyAmount = prompt(`Rebuy amount for ${player.name}:`, gameState.buyIn);
+            if (!rebuyAmount || isNaN(rebuyAmount) || rebuyAmount <= 0) return;
+            
+            const amount = parseFloat(rebuyAmount);
+            player.buyIns.push(amount);
+            player.totalInvested += amount;
+            player.netGain = player.currentValue - player.totalInvested;
+            gameState.totalPot += amount;
+            
+            updateGameDisplay();
+            saveGameState();
+            
+            alert(`${player.name} rebought for $${amount}.`);
+        }
+        
+        function startFinalizing() {
+            gameState.gamePhase = 'finalizing';
+            updateGameDisplay();
+            alert('Please update all players with their final chip counts, then click "Calculate Payouts"');
+        }
+        
+        function backToPlaying() {
+            gameState.gamePhase = 'playing';
+            updateGameDisplay();
+        }
+        
+        function endGame() {
+            // Check if all players have had their chips updated
+            const allUpdated = gameState.players.every(p => p.currentValue > 0 || p.totalInvested > 0);
+            
+            if (!allUpdated) {
+                alert('Please update chip counts for all players before calculating payouts');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to calculate final payouts?')) return;
+            
+            // Calculate final standings
+            const standings = [...gameState.players].sort((a, b) => b.currentValue - a.currentValue);
+            
+            // Display results
+            showFinalResults(standings);
+            
+            // Save to history
+            saveGameToHistory();
+            
+            showScreen('results-screen');
+        }
+        
+        function showFinalResults(standings) {
+            const standingsDiv = document.getElementById('final-standings');
+            let html = '<div style="display: grid; gap: 0.5rem;">';
+            
+            standings.forEach((player, index) => {
+                const netClass = player.netGain >= 0 ? 'positive' : 'negative';
+                const netSign = player.netGain >= 0 ? '+' : '';
+                
+                html += `
+                    <div class="payment-instruction">
+                        <div>
+                            <strong>${index + 1}. ${player.name}</strong>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                Chips: $${player.currentValue.toFixed(2)} | Invested: $${player.totalInvested.toFixed(2)}
+                            </div>
+                        </div>
+                        <div class="payment-amount ${netClass}">
+                            ${netSign}$${Math.abs(player.netGain).toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            standingsDiv.innerHTML = html;
+            
+            // Calculate payment map
+            calculatePaymentMap(standings);
+        }
+        
+        function calculatePaymentMap(standings) {
+            const paymentDiv = document.getElementById('payment-map');
+            const payments = [];
+            
+            // Separate winners and losers
+            const winners = standings.filter(p => p.netGain > 0);
+            const losers = standings.filter(p => p.netGain < 0);
+            
+            // Calculate proportional payments
+            const totalWinnings = winners.reduce((sum, w) => sum + w.netGain, 0);
+            
+            losers.forEach(loser => {
+                const amountOwed = Math.abs(loser.netGain);
+                
+                winners.forEach(winner => {
+                    const proportion = winner.netGain / totalWinnings;
+                    const payment = amountOwed * proportion;
+                    
+                    if (payment >= 0.50) { // Ignore tiny payments
+                        payments.push({
+                            from: loser.name,
+                            to: winner.name,
+                            amount: payment
+                        });
+                    }
+                });
+            });
+            
+            // Display payment instructions
+            let html = '';
+            
+            if (payments.length === 0) {
+                html = '<p>No payments needed - game broke even!</p>';
+            } else {
+                payments.forEach(payment => {
+                    html += `
+                        <div class="payment-instruction">
+                            <div>${payment.from} → ${payment.to}</div>
+                            <div class="payment-amount">$${payment.amount.toFixed(2)}</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            paymentDiv.innerHTML = html;
+        }
+        
+        function exportResults() {
+            let text = 'HOME GAME HERO - POKER RESULTS\n';
+            text += '================================\n\n';
+            text += `Date: ${new Date().toLocaleString()}\n`;
+            text += `Total Pot: $${gameState.totalPot.toFixed(2)}\n\n`;
+            
+            text += 'FINAL STANDINGS:\n';
+            const standings = [...gameState.players].sort((a, b) => b.currentValue - a.currentValue);
+            
+            standings.forEach((player, index) => {
+                const netSign = player.netGain >= 0 ? '+' : '';
+                text += `${index + 1}. ${player.name}: $${player.currentValue.toFixed(2)} (${netSign}$${player.netGain.toFixed(2)})\n`;
+            });
+            
+            text += '\nPAYMENT INSTRUCTIONS:\n';
+            const payments = document.getElementById('payment-map').innerText;
+            text += payments;
+            
+            // Create download
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `poker-results-${Date.now()}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Storage functions
+        function saveGameState() {
+            localStorage.setItem('currentGame', JSON.stringify(gameState));
+        }
+        
+        function loadGameState() {
+            const saved = localStorage.getItem('currentGame');
+            if (saved) {
+                gameState = JSON.parse(saved);
+            }
+        }
+        
+        function saveGameToHistory() {
+            const history = JSON.parse(localStorage.getItem('gameHistory') || '[]');
+            
+            const gameSummary = {
+                date: new Date().toISOString(),
+                players: gameState.players.length,
+                totalPot: gameState.totalPot,
+                winner: [...gameState.players].sort((a, b) => b.currentValue - a.currentValue)[0].name,
+                results: gameState.players.map(p => ({
+                    name: p.name,
+                    netGain: p.netGain
+                }))
+            };
+            
+            history.unshift(gameSummary);
+            
+            // Keep only last 10 games
+            if (history.length > 10) {
+                history.pop();
+            }
+            
+            localStorage.setItem('gameHistory', JSON.stringify(history));
+        }
+        
+        function loadGameHistory() {
+            const history = JSON.parse(localStorage.getItem('gameHistory') || '[]');
+            
+            if (history.length === 0) {
+                alert('No previous games found');
+                return;
+            }
+            
+            // For now, just show an alert with game history
+            let message = 'Previous Games:\n\n';
+            history.forEach((game, index) => {
+                const date = new Date(game.date).toLocaleDateString();
+                message += `${index + 1}. ${date} - Winner: ${game.winner} - Pot: $${game.totalPot}\n`;
+            });
+            
+            alert(message);
+        }
+        
+        // Service Worker setup
+        function setupServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => console.log('Service Worker registered'))
+                    .catch(error => console.log('Service Worker registration failed:', error));
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

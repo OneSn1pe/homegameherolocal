@@ -68,31 +68,33 @@
 
 **Preset Configurations**:
 
-*Simple Home Game*:
-- White chips: $1 each
-- Red chips: $5 each  
-- Blue chips: $10 each
-- Starting: 10 white, 4 red, 2 blue = $40 total
+All chip values are calculated as percentages of your buy-in amount. For example, with a $100 buy-in:
 
-*Casino Style*:
-- White chips: $1 each
-- Red chips: $5 each
-- Green chips: $25 each
-- Black chips: $100 each
-- Starting: 8 white, 8 red, 2 green = $98 total
+*Simple Home Game* (3 colors):
+- White chips: 2.5% of buy-in ($2.50 each with $100 buy-in)
+- Red chips: 12.5% of buy-in ($12.50 each with $100 buy-in)  
+- Blue chips: 25% of buy-in ($25 each with $100 buy-in)
+- Starting: 20 white, 6 red, 1 blue = 100% of buy-in
 
-*High Stakes*:
-- Red chips: $5 each
-- Green chips: $25 each
-- Black chips: $100 each
-- Purple chips: $500 each
-- Starting: 4 red, 8 green, 3 black = $520 total
+*Casino Style* (4 colors):
+- White chips: 1% of buy-in ($1 each with $100 buy-in)
+- Red chips: 5% of buy-in ($5 each with $100 buy-in)
+- Green chips: 25% of buy-in ($25 each with $100 buy-in)
+- Black chips: 50% of buy-in ($50 each with $100 buy-in)
+- Starting: 20 white, 12 red, 1 green = 105% of buy-in
+
+*High Stakes* (4 colors):
+- Red chips: 1% of buy-in ($1 each with $100 buy-in)
+- Green chips: 5% of buy-in ($5 each with $100 buy-in)
+- Black chips: 20% of buy-in ($20 each with $100 buy-in)
+- Purple chips: 50% of buy-in ($50 each with $100 buy-in)
+- Starting: 10 red, 10 green, 2 black = 100% of buy-in
 
 **Custom Configuration**:
 - Add up to 6 different chip colors
-- Set any dollar value per color
+- Set each chip value as a percentage of buy-in
 - Choose any starting distribution
-- Automatically validates totals
+- Automatically calculates real dollar values based on buy-in
 
 #### 3.2 Player Management
 
@@ -111,7 +113,8 @@
 
 **Real-time Value Calculation**:
 ```
-Player Value = (White Chips × White Value) + (Red Chips × Red Value) + ...
+Chip Dollar Value = Chip Percentage × Buy-in Amount
+Player Value = (White Chips × White Dollar Value) + (Red Chips × Red Dollar Value) + ...
 Net Gain/Loss = Current Value - Total Investment
 Total Pot = Sum of all buy-ins and re-buys
 ```
