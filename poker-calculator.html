@@ -606,6 +606,11 @@
             
             configDiv.classList.remove('hidden');
             
+            // Set buy-in to 3000 for tournament preset
+            if (preset === 'tournament') {
+                document.getElementById('buy-in').value = 3000;
+            }
+            
             if (preset === 'custom') {
                 renderCustomChipConfig();
             } else {
@@ -616,13 +621,11 @@
         function renderPresetChipConfig(chips) {
             const configDiv = document.getElementById('chip-config');
             const preset = document.getElementById('chip-preset').value;
-            const buyIn = parseFloat(document.getElementById('buy-in').value) || 100;
+            const buyIn = parseFloat(document.getElementById('buy-in').value) || (preset === 'tournament' ? 3000 : 100);
             let html = '<h4>Chip Values & Starting Stacks</h4>';
             
             if (preset === 'tournament') {
-                html += '<p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Tournament preset uses fixed chip values: $10, $25, $50, $100, $500. Buy-in set to $3000</p>';
-                // Always set buy-in to 3000 for tournament preset
-                document.getElementById('buy-in').value = 3000;
+                html += '<p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Tournament preset uses fixed chip values: $10, $25, $50, $100, $500. Buy-in: $3000</p>';
             } else {
                 html += '<p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Chip values are calculated based on your buy-in amount</p>';
             }
