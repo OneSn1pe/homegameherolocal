@@ -14,13 +14,41 @@ A simple, offline poker game calculator for home games that tracks chip values, 
 
 ## Quick Start
 
-1. Open `poker-calculator.html` in any modern web browser
+### Development Setup
+
+1. Clone the repository
+2. Install dependencies (optional, for dev server):
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+4. The app will open automatically at http://localhost:8080
+
+### Direct Usage (No Setup Required)
+
+1. Simply open `poker-calculator.html` in any modern web browser
 2. Click "New Game" to start
 3. Set your real money buy-in amount (e.g., $50, $100)
 4. Select a chip configuration (chip values auto-calculate from buy-in)
 5. Add player names and start playing!
 
 ## Installation
+
+### Development Server
+```bash
+# Install dependencies (first time only)
+npm install
+
+# Start the dev server
+npm run dev
+# or
+npm start
+```
+
+The app will be available at http://localhost:8080
 
 ### Mobile (Recommended)
 - **iOS**: Open in Safari → Share → Add to Home Screen
@@ -56,6 +84,8 @@ A simple, offline poker game calculator for home games that tracks chip values, 
 - `poker-calculator.html` - Main application file
 - `manifest.json` - PWA manifest for app installation
 - `sw.js` - Service worker for offline functionality
+- `package.json` - Node.js configuration for dev server
+- `.gitignore` - Git ignore file
 - `DESIGN_DOCUMENT.md` - Complete application documentation
 
 ## License

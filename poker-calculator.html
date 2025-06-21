@@ -405,6 +405,7 @@
                         <option value="simple">Simple Home Game (3 colors)</option>
                         <option value="casino">Casino Style (4 colors)</option>
                         <option value="high">High Stakes (4 colors)</option>
+                        <option value="tournament">Tournament ($10/$25/$50/$100/$500)</option>
                         <option value="custom">Custom Configuration</option>
                     </select>
                 </div>
@@ -439,7 +440,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h3>Total Pot: $<span id="total-pot">0</span></h3>
-                        <p style="color: var(--text-secondary);">Players: <span id="player-count">0</span></p>
+                        <p style="color: var(--text-secondary);">Players: <span id="player-count">0</span> | Buy-in: $<span id="current-buy-in">0</span></p>
                     </div>
                     <div id="game-controls">
                         <button class="btn btn-warning" onclick="startFinalizing()">Update Final Chips</button>
@@ -485,6 +486,24 @@
         </div>
     </div>
     
+    <!-- Modal for buy-in editing -->
+    <div id="buy-in-editor-modal" class="hidden">
+        <div class="modal-overlay" onclick="closeBuyInEditor()"></div>
+        <div class="chip-editor">
+            <h3>Edit Buy-in Amount</h3>
+            <div class="form-group">
+                <label>New Buy-in Amount ($)</label>
+                <input type="number" id="new-buy-in" min="1" step="1" onchange="updateChipValuePreview()" oninput="updateChipValuePreview()">
+                <small style="display: block; margin-top: 0.5rem; color: var(--text-secondary);">Warning: Changing buy-in will recalculate all chip values</small>
+            </div>
+            <div id="chip-value-preview" style="margin-top: 1rem;"></div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn" onclick="closeBuyInEditor()">Cancel</button>
+                <button class="btn btn-success" onclick="saveBuyIn()">Update Buy-in</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // Global game state
         let gameState = {
@@ -515,6 +534,13 @@
                 { color: '#00ff00', name: 'Green', value: 0.05, count: 10 }, // 5% of buy-in each
                 { color: '#000000', name: 'Black', value: 0.2, count: 2 },   // 20% of buy-in each
                 { color: '#800080', name: 'Purple', value: 0.5, count: 0 }   // 50% of buy-in each
+            ],
+            tournament: [
+                { color: '#ffffff', name: 'White', value: 10/3000, count: 10 },  // $10 (fixed)
+                { color: '#0000ff', name: 'Blue', value: 25/3000, count: 10 },   // $25 (fixed)
+                { color: '#ff0000', name: 'Red', value: 50/3000, count: 10 },    // $50 (fixed)
+                { color: '#00ff00', name: 'Green', value: 100/3000, count: 5 },  // $100 (fixed)
+                { color: '#000000', name: 'Black', value: 500/3000, count: 0 }   // $500 (fixed)
             ]
         };
         
@@ -589,12 +615,20 @@
         
         function renderPresetChipConfig(chips) {
             const configDiv = document.getElementById('chip-config');
+            const preset = document.getElementById('chip-preset').value;
             const buyIn = parseFloat(document.getElementById('buy-in').value) || 100;
             let html = '<h4>Chip Values & Starting Stacks</h4>';
-            html += '<p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Chip values are calculated based on your buy-in amount</p>';
+            
+            if (preset === 'tournament') {
+                html += '<p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Tournament preset uses fixed chip values: $10, $25, $50, $100, $500. Buy-in set to $3000</p>';
+                // Always set buy-in to 3000 for tournament preset
+                document.getElementById('buy-in').value = 3000;
+            } else {
+                html += '<p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Chip values are calculated based on your buy-in amount</p>';
+            }
             
             chips.forEach((chip, index) => {
-                const dollarValue = (chip.value * buyIn).toFixed(2);
+                const dollarValue = (chip.value * (preset === 'tournament' ? 3000 : buyIn)).toFixed(2);
                 html += `
                     <div class="chip-row">
                         <div class="chip-color" style="background-color: ${chip.color}"></div>
@@ -653,7 +687,8 @@
             
             chips.forEach((chip, index) => {
                 const count = parseInt(document.getElementById(`chip-count-${index}`).value) || 0;
-                total += (chip.value * buyIn) * count;
+                const baseValue = (preset === 'tournament') ? 3000 : buyIn;
+                total += (chip.value * baseValue) * count;
             });
             
             // Show warning if chip total doesn't match buy-in
@@ -748,7 +783,9 @@
             
             // Store actual dollar values for chips based on buy-in
             gameState.chipConfig.forEach(chip => {
-                chip.dollarValue = chip.value * buyIn;
+                // For tournament preset, use fixed $3000 base for calculations
+                const baseValue = (preset === 'tournament') ? 3000 : buyIn;
+                chip.dollarValue = chip.value * baseValue;
             });
             
             // Initialize player chips
@@ -803,11 +840,12 @@
             // Update header stats
             document.getElementById('total-pot').textContent = gameState.totalPot.toFixed(2);
             document.getElementById('player-count').textContent = gameState.players.length;
+            document.getElementById('current-buy-in').textContent = gameState.buyIn.toFixed(2);
             
             // Update game controls
             const controlsDiv = document.getElementById('game-controls');
             if (gameState.gamePhase === 'playing') {
-                controlsDiv.innerHTML = '<button class="btn btn-warning" onclick="startFinalizing()">Update Final Chips</button>';
+                controlsDiv.innerHTML = '<button class="btn btn-small" onclick="editBuyIn()">Edit Buy-in</button> <button class="btn btn-warning" onclick="startFinalizing()">Update Final Chips</button>';
             } else {
                 controlsDiv.innerHTML = '<button class="btn" onclick="backToPlaying()">Back</button> <button class="btn btn-danger" onclick="endGame()">Calculate Payouts</button>';
             }
@@ -1173,6 +1211,81 @@
                     .then(registration => console.log('Service Worker registered'))
                     .catch(error => console.log('Service Worker registration failed:', error));
             }
+        }
+        
+        function editBuyIn() {
+            document.getElementById('buy-in-editor-modal').classList.remove('hidden');
+            document.getElementById('new-buy-in').value = gameState.buyIn;
+            
+            // Show preview of new chip values
+            updateChipValuePreview();
+        }
+        
+        function updateChipValuePreview() {
+            const newBuyIn = parseFloat(document.getElementById('new-buy-in').value) || gameState.buyIn;
+            const previewDiv = document.getElementById('chip-value-preview');
+            
+            let html = '<h4>New Chip Values:</h4>';
+            html += '<div style="display: grid; gap: 0.5rem;">';
+            
+            gameState.chipConfig.forEach(chip => {
+                const oldValue = chip.dollarValue || (chip.value * gameState.buyIn);
+                const newValue = chip.value * newBuyIn;
+                const change = ((newValue / oldValue - 1) * 100).toFixed(1);
+                const changeClass = newValue > oldValue ? 'positive' : newValue < oldValue ? 'negative' : '';
+                
+                html += `
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-tertiary); border-radius: 4px;">
+                        <div>
+                            <span class="chip-color" style="display: inline-block; width: 20px; height: 20px; background-color: ${chip.color}; border-radius: 50%; vertical-align: middle;"></span>
+                            ${chip.name}
+                        </div>
+                        <div>
+                            $${oldValue.toFixed(2)} → $${newValue.toFixed(2)}
+                            <span class="${changeClass}" style="font-size: 0.875rem;">(${change >= 0 ? '+' : ''}${change}%)</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            previewDiv.innerHTML = html;
+        }
+        
+        function closeBuyInEditor() {
+            document.getElementById('buy-in-editor-modal').classList.add('hidden');
+        }
+        
+        function saveBuyIn() {
+            const newBuyIn = parseFloat(document.getElementById('new-buy-in').value);
+            
+            if (!newBuyIn || newBuyIn <= 0) {
+                alert('Please enter a valid buy-in amount');
+                return;
+            }
+            
+            const oldBuyIn = gameState.buyIn;
+            gameState.buyIn = newBuyIn;
+            
+            // Update chip dollar values
+            gameState.chipConfig.forEach(chip => {
+                chip.dollarValue = chip.value * newBuyIn;
+            });
+            
+            // Recalculate all player values
+            gameState.players.forEach(player => {
+                player.currentValue = calculatePlayerValue(player);
+                player.netGain = player.currentValue - player.totalInvested;
+            });
+            
+            // Update total pot if buy-ins should scale
+            // Note: This keeps existing investments the same, only changes chip values
+            
+            closeBuyInEditor();
+            updateGameDisplay();
+            saveGameState();
+            
+            alert(`Buy-in updated from $${oldBuyIn.toFixed(2)} to $${newBuyIn.toFixed(2)}. All chip values have been recalculated.`);
         }
         
         // Initialize on load

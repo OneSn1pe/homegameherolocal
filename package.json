@@ -1,0 +1,23 @@
+{
+  "name": "home-game-hero",
+  "version": "1.0.0",
+  "description": "Simple offline poker calculator for home games",
+  "main": "poker-calculator.html",
+  "scripts": {
+    "dev": "npx http-server -p 8080 -c-1 -o /poker-calculator.html",
+    "start": "npm run dev",
+    "serve": "npx serve -p 8080"
+  },
+  "keywords": [
+    "poker",
+    "calculator",
+    "offline",
+    "pwa",
+    "game"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
